@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/audio/sound_manager.dart';
 import 'core/storage/progress_store.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/home_page.dart';
@@ -16,6 +19,8 @@ Future<void> main() async {
   await ProgressStore.instance.init();
   // M-Parent：启动护眼 / 每日时长守卫（M3）
   await ParentalGuard.instance.start();
+  // M-Sound：全局音效预加载（不阻塞首帧，未就绪时播放会按需加载）
+  unawaited(SoundManager.instance.init());
   runApp(const TongquApp());
 }
 

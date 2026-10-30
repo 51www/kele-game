@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../core/audio/sound_manager.dart';
 import '../core/storage/progress_store.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/app_tokens.dart';
@@ -137,6 +138,10 @@ class _GameScaffoldState extends State<GameScaffold> {
   void _toggleSound() {
     final bool muted = !ProgressStore.instance.soundMuted;
     ProgressStore.instance.setSoundMuted(muted);
+    // 取消静音后立即给一声反馈，让孩子确认声音已开启
+    if (!muted) {
+      SoundManager.instance.click();
+    }
     showAppToast(
       context,
       muted ? '已静音' : '声音已开启',

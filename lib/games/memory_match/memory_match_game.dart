@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/audio/sound_manager.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../game_engine/game_module.dart';
 
@@ -232,8 +233,11 @@ class MemoryMatchGame extends FlameGame with TapCallbacks {
       _phase = 0;
       if (_matchedPairs >= _level.pairs) {
         _finish();
+      } else {
+        SoundManager.instance.match();
       }
     } else {
+      SoundManager.instance.wrong();
       _phase = 3;
       _phaseTimer = 0;
     }
@@ -241,6 +245,7 @@ class MemoryMatchGame extends FlameGame with TapCallbacks {
 
   void _finish() {
     _finished = true;
+    SoundManager.instance.win();
     onComplete(
       MemoryMatchStats(
         steps: _steps,
@@ -279,6 +284,7 @@ class MemoryMatchGame extends FlameGame with TapCallbacks {
     if (card.matched || card.revealed) return;
 
     card.show();
+    SoundManager.instance.flip();
     if (_firstIndex < 0) {
       _firstIndex = hit;
       _phase = 1;

@@ -80,6 +80,12 @@
 - 命名建议：`<里程碑号>_<功能或游戏slug>_<场景>.png`（如 `M4_whack_mole_main.png`、`M1_framework_hall.png`），便于回溯验收。
 - 截图需覆盖该里程碑的验收标准关键点（如 M1 大厅→结算→回大厅、M2 下载解锁流程、M3 家长门/护眼页），与开发里程碑文档各里程碑「验收标准」对应。
 
+### 规则 C：音效场景优先从本地音效库匹配
+
+- 凡开发中**涉及需要音效的场景**（点击、翻牌、配对、错误、过关、得星、弹窗开关等），必须先查 **§5 音效资源索引**，从本地两个音效包目录（`docs/assets/Audio`、`docs/assets/Audio1`）中匹配并选择合适的音效，**不得凭空新找来源**。
+- 选定后：拷贝到 `assets/shared/audio/` 并语义化重命名（如 `star_ding.ogg`），在 §5.3「已启用映射表」登记来源文件名；该目录已在 `pubspec.yaml` 按目录整体注册，**新增文件无需改 pubspec**；播放统一走 `SoundManager`（`lib/core/audio/sound_manager.dart`），自动受全局静音开关控制。
+- 若目录中**无合适音效**，须在回复中明确告知补充需求，至少包含：**类型**（短音效/结算乐句/循环 BGM）、**触发场景**、**时长**、**风格**（柔和低幼、禁刺耳）、**格式**（OGG 优先）及建议来源（Kenney / Freesound CC0 等）。
+
 ---
 
 ## 4. 关键路径速查
@@ -88,3 +94,61 @@
 - 目标设备：**手机优先**（Android 手机，竖屏 360dp 基准；平板/桌面仅兼容与调试）——硬约束见 §1.1。
 - 工程结构：`lib/core`（主题/路由/音频/存储）、`lib/features`（home/parent/download）、`lib/game_engine`（GameModule/GameScaffold/score_system）、`lib/games/<slug>`、`assets/`（shared + games）。
 - 验收总目标（计划书 §10）：3 岁可独立玩一局、零广告/误触、护眼与家长门真实生效、家庭试用有 2~3 个"最爱游戏"。
+
+---
+
+## 5. 音效资源索引
+
+> 本地音效库 = 两个 CC0 素材包（Kenney Interface Sounds + Music Jingles），只读存档，禁止改动原文件；运行时使用的音效统一放 `assets/shared/audio/`。
+
+### 5.1 `docs/assets/Audio` —— Interface Sounds（100 个 UI 短音效，OGG，CC0）
+
+UI 交互短音效，单文件 0.1~0.7s。按文件名前缀分组（`_001` 起为同类变体，任选其一，试听后定）：
+
+| 前缀（数量） | 用途说明 |
+|---|---|
+| click（5） | 普通按钮点击 |
+| select（8） | 选中/高亮 |
+| switch / toggle（7+4） | 开关切换（音量开关、设置项） |
+| open（4） | 打开/展开（弹窗、抽屉） |
+| close（4） | 关闭/收起 |
+| maximize（9） | 放大/进入/升级感 |
+| minimize（9） | 缩小/退出/折叠 |
+| back（4） | 返回 |
+| drop（4） | 放置/落下（拖拽松手、拼图落位） |
+| pluck（2） | 拨弦，轻快——翻牌类轻交互 |
+| glass（6） | 玻璃清脆声——道具、得星 |
+| tick（3） | 滴答（倒计时） |
+| confirmation（4） | 确认/成功（上扬）——答对、配对成功 |
+| error（8） | 错误/未命中（部分较重，儿童场景选温和的并压低音量） |
+| question（4） | 疑问/提示音 |
+| scratch（5） | 刮擦（刮奖/擦除类玩法） |
+| scroll（5） | 滚动（偏长，慎用于短反馈） |
+| bong（1） | 低沉"碰"声 |
+| glitch（4） | 故障杂音（一般不用，风格不符） |
+
+### 5.2 `docs/assets/Audio1` —— Music Jingles（85 首结算乐句，OGG，CC0）
+
+5 种音色 × 各 17 首（`jingles_XXX00~16`），单首约 0.5~1.5s，旋律/长短各异（有上扬胜利型也有下行收尾型），**适合过关/得星结算，不适合循环 BGM**：
+
+| 子目录 | 音色风格 | 适用场景 |
+|---|---|---|
+| Pizzicato jingles | 拨弦（柔和轻快） | **最贴合低幼全局风格**，默认首选 |
+| Hit jingles | 打击乐（干净利落） | 得星、连续命中的爆发时刻 |
+| Steel jingles | 钢鼓（明亮欢快） | 胜利结算、庆祝动画 |
+| Sax jingles | 萨克斯（慵懒温暖） | 大结算、彩蛋时刻 |
+| 8-Bit jingles | 8-bit 复古电子（NES） | 仅限像素/复古主题的特殊玩法，默认不用 |
+
+> 注：同一音色下 00~16 编号对应不同旋律与长短，索引只定位到"组"，**具体选用哪一首须试听确认**后登记。
+
+### 5.3 已启用映射表（`assets/shared/audio/` ↔ 来源）
+
+| 运行时文件 | 来源（包 / 原文件名） | 用途 | 接线位置 |
+|---|---|---|---|
+| click.ogg | Audio / click_001.ogg | 通用点击、取消静音反馈 | SoundManager.click() |
+| flip.ogg | Audio / pluck_001.ogg | 翻牌/轻操作 | SoundManager.flip() |
+| match.ogg | Audio / confirmation_001.ogg | 配对成功 | SoundManager.match() |
+| wrong.ogg | Audio / error_004.ogg | 未命中（音量 0.6） | SoundManager.wrong() |
+| win.ogg | Audio / confirmation_002.ogg | 过关庆祝 | SoundManager.win() |
+
+新增音效时：拷贝 → 语义化重命名 → 在本表登记 → `SoundManager` 加对应方法（自动受静音开关控制）。

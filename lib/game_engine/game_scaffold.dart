@@ -8,6 +8,7 @@ import '../core/theme/app_tokens.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_toast.dart';
 import '../core/widgets/round_icon_button.dart';
+import '../features/parent/parental_guard.dart';
 import 'game_module.dart';
 import 'result_dialog.dart';
 import 'score_system.dart';
@@ -45,6 +46,9 @@ class _GameScaffoldState extends State<GameScaffold> {
   void initState() {
     super.initState();
     _subscription = widget.module.resultStream.listen(_handleResult);
+    // M3 护眼：护眼休息 / 每日锁屏时由守卫统一冻结 / 恢复游戏（计划书 §4.3 规则 3）
+    ParentalGuard.instance.onFreezeGame = _freezeByGuard;
+    ParentalGuard.instance.onResumeGame = _resumeByGuard;
     _prepare();
   }
 
@@ -52,7 +56,22 @@ class _GameScaffoldState extends State<GameScaffold> {
   void dispose() {
     _subscription?.cancel();
     widget.module.dispose();
+    ParentalGuard.instance.onFreezeGame = null;
+    ParentalGuard.instance.onResumeGame = null;
     super.dispose();
+  }
+
+  void _freezeByGuard() {
+    if (!_paused) {
+      widget.module.pause();
+    }
+  }
+
+  void _resumeByGuard() {
+    // 仅当不是用户手动暂停时自动恢复
+    if (!_paused) {
+      widget.module.resume();
+    }
   }
 
   Future<void> _prepare() async {
@@ -332,11 +351,14 @@ class _GameScaffoldState extends State<GameScaffold> {
               style: AppTypography.title.copyWith(color: AppColors.text1),
             ),
             const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              label: '继续游戏',
-              size: AppButtonSize.medium,
-              expand: false,
-              onPressed: _togglePause,
+            // 与结算弹窗按钮同口径：撑满宽度，两侧留 AppSpacing.xl 空白
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: AppButton(
+                label: '继续游戏',
+                size: AppButtonSize.medium,
+                onPressed: _togglePause,
+              ),
             ),
           ],
         ),

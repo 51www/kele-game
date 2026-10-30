@@ -15,6 +15,7 @@ class ProgressStore {
 
   static const String _progressPrefix = 'progress_';
   static const String _soundMutedKey = 'settings_sound_muted';
+  static const String _hiddenGamesKey = 'parent_hidden_games';
 
   late final SharedPreferences _prefs;
 
@@ -96,6 +97,36 @@ class ProgressStore {
   Future<void> setSoundMuted(bool muted) async {
     if (!_ready) return;
     await _prefs.setBool(_soundMutedKey, muted);
+    revision.value++;
+  }
+
+  // ── M3 游戏隐藏 / 删除（家长中心管理）─────────────────────────────────
+
+  /// 已被家长隐藏的游戏 id 列表
+  List<String> get hiddenGames {
+    if (!_ready) return const <String>[];
+    return _prefs.getStringList(_hiddenGamesKey) ?? const <String>[];
+  }
+
+  bool isHidden(String gameId) => hiddenGames.contains(gameId);
+
+  /// 隐藏 / 恢复显示某游戏（隐藏后大厅不再展示）
+  Future<void> setHidden(String gameId, bool hidden) async {
+    if (!_ready) return;
+    final List<String> ids = List<String>.of(hiddenGames);
+    if (hidden) {
+      if (!ids.contains(gameId)) ids.add(gameId);
+    } else {
+      ids.remove(gameId);
+    }
+    await _prefs.setStringList(_hiddenGamesKey, ids);
+    revision.value++;
+  }
+
+  /// 删除游戏：清空该游戏的下载解锁与全部进度（回到商店未下载状态）
+  Future<void> deleteGame(String gameId) async {
+    if (!_ready) return;
+    await _prefs.remove('$_progressPrefix$gameId');
     revision.value++;
   }
 }

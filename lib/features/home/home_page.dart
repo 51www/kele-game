@@ -9,6 +9,7 @@ import '../../core/widgets/round_icon_button.dart';
 import '../../features/download/download_sheet.dart';
 import '../../game_engine/game_registry.dart';
 import '../parent/parent_center_page.dart';
+import '../parent/parent_gate.dart';
 import 'game_tile_card.dart';
 
 /// 游戏大厅（UI 规范 §7：深紫渐变底 +「我的游戏」在前 +「游戏商店」在后 +
@@ -42,6 +43,8 @@ class _HomePageState extends State<HomePage> {
     final List<GameDescriptor> myGames = <GameDescriptor>[];
     final List<GameDescriptor> storeGames = <GameDescriptor>[];
     for (final GameDescriptor descriptor in GameRegistry.all) {
+      // M3 家长隐藏：被隐藏的游戏大厅完全不再展示（我的游戏与商店均不出现）
+      if (ProgressStore.instance.isHidden(descriptor.id)) continue;
       final bool unlocked = descriptor.builtIn ||
           ProgressStore.instance.progressOf(descriptor.id).unlocked;
       if (unlocked) {
@@ -103,13 +106,7 @@ class _HomePageState extends State<HomePage> {
         RoundIconButton(
           icon: Icons.lock_rounded,
           semanticLabel: '家长中心',
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => const ParentCenterPage(),
-              ),
-            );
-          },
+          onPressed: _openParentCenter,
         ),
       ],
     );
@@ -253,5 +250,16 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     Navigator.of(context).pushNamed('/game/${descriptor.id}');
+  }
+
+  /// 家长中心入口：先过家长门（算术题 / 长按 3 秒随机轮换），通过后才进入
+  Future<void> _openParentCenter() async {
+    final bool passed = await showParentGate(context);
+    if (!passed || !mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const ParentCenterPage(),
+      ),
+    );
   }
 }

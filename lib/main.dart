@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/storage/progress_store.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/home_page.dart';
+import 'features/parent/guard_overlay.dart';
+import 'features/parent/parental_guard.dart';
 import 'game_engine/game_module.dart';
 import 'game_engine/game_registry.dart';
 import 'game_engine/game_scaffold.dart';
@@ -12,6 +14,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // M-Store：先加载本地进度，再渲染大厅（避免首帧闪烁）
   await ProgressStore.instance.init();
+  // M-Parent：启动护眼 / 每日时长守卫（M3）
+  await ParentalGuard.instance.start();
   runApp(const TongquApp());
 }
 
@@ -33,6 +37,9 @@ class TongquApp extends StatelessWidget {
       supportedLocales: const <Locale>[Locale('zh', 'CN')],
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.home,
+      // 护眼休息 / 「明天见」锁屏覆盖层：置于所有页面（含游戏与弹窗）之上
+      builder: (BuildContext context, Widget? child) =>
+          GuardOverlayHost(child: child ?? const SizedBox.shrink()),
     );
   }
 }

@@ -15,6 +15,7 @@ class GameDescriptor {
     this.iconAsset,
     this.fallbackIcon,
     this.builtIn = false,
+    this.comingSoon = false,
     this.moduleBuilder,
   });
 
@@ -42,6 +43,9 @@ class GameDescriptor {
   /// 是否内置（内置游戏无需下载，M2 起其余游戏走素材包解锁）
   final bool builtIn;
 
+  /// 已解锁但尚未实装（占位游戏）；大厅展示「即将上架」，点击给提示
+  final bool comingSoon;
+
   /// 创建游戏实例；商店占位条目为 null
   final GameModule Function()? moduleBuilder;
 
@@ -64,19 +68,18 @@ class GameDescriptor {
 class GameRegistry {
   const GameRegistry._();
 
-  /// 内置验证游戏：翻牌记忆
+  /// 内置验证游戏：翻牌记忆（M2 起改造为「内置逻辑 + 素材包」模型，需下载解锁）
   static const GameDescriptor memoryMatch = GameDescriptor(
     id: 'memory_match',
     name: '翻牌记忆',
     minAge: 3,
-    packSizeBytes: 0,
+    packSizeBytes: 2202009, // ≈ 2.1 MB（与 assets/packs/memory_match/manifest.json 的 sizeBytes 对齐）
     tileColor: AppColors.tileLavender,
     iconAsset: 'assets/shared/character-library/animal_05_fox.png',
-    builtIn: true,
     moduleBuilder: MemoryMatchModule.new,
   );
 
-  /// 商店占位：打地鼠（M4 内容①）
+  /// 商店占位：打地鼠（M4 内容①；M2 起可走下载解锁流程，解锁后显示「即将上架」）
   static const GameDescriptor whackMole = GameDescriptor(
     id: 'whack_mole',
     name: '打地鼠',
@@ -84,9 +87,10 @@ class GameRegistry {
     packSizeBytes: 6 * 1024 * 1024,
     tileColor: AppColors.tileSakura,
     fallbackIcon: Icons.gps_fixed_rounded,
+    comingSoon: true,
   );
 
-  /// 商店占位：宝宝爱拼图（M4 内容①）
+  /// 商店占位：宝宝爱拼图（M4 内容①；同上）
   static const GameDescriptor jigsaw = GameDescriptor(
     id: 'jigsaw',
     name: '宝宝爱拼图',
@@ -94,6 +98,7 @@ class GameRegistry {
     packSizeBytes: 8 * 1024 * 1024,
     tileColor: AppColors.tileMint,
     fallbackIcon: Icons.extension_rounded,
+    comingSoon: true,
   );
 
   static const List<GameDescriptor> all = <GameDescriptor>[

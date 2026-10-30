@@ -1,0 +1,22 @@
+{
+  "gameId": "memory_match",
+  "displayName": "翻牌记忆",
+  "minAge": 3,
+  "sizeBytes": 2218898,
+  "fileCount": 12,
+  "md5": "f6786549c02780f6e8d572e0378a2105",
+  "files": [
+    "assets/shared/character-library/animal_01_cat.png",
+    "assets/shared/character-library/animal_02_dog.png",
+    "assets/shared/character-library/animal_03_rabbit.png",
+    "assets/shared/character-library/animal_04_panda.png",
+    "assets/shared/character-library/animal_05_fox.png",
+    "assets/shared/character-library/animal_06_unicorn.png",
+    "assets/shared/character-library/animal_07_bear.png",
+    "assets/shared/character-library/animal_08_penguin.png",
+    "assets/shared/character-library/animal_09_frog.png",
+    "assets/shared/character-library/animal_10_chick.png",
+    "assets/shared/character-library/animal_11_pig.png",
+    "assets/shared/character-library/animal_12_koala.png"
+  ]
+}

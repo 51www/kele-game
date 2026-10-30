@@ -6,6 +6,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/round_icon_button.dart';
+import '../../features/download/download_sheet.dart';
 import '../../game_engine/game_registry.dart';
 import '../parent/parent_center_page.dart';
 import 'game_tile_card.dart';
@@ -188,9 +189,10 @@ class _HomePageState extends State<HomePage> {
             return StoreGameCard(
               descriptor: descriptor,
               onTap: () {
-                showAppToast(
+                showDownloadSheet(
                   context,
-                  '「${descriptor.name}」马上就来啦，到时候可以下载哦',
+                  descriptor,
+                  onPlay: () => _openGame(descriptor),
                 );
               },
             );
@@ -246,6 +248,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openGame(GameDescriptor descriptor) {
+    if (descriptor.comingSoon) {
+      showAppToast(context, '还在开发中，敬请期待～');
+      return;
+    }
     Navigator.of(context).pushNamed('/game/${descriptor.id}');
   }
 }

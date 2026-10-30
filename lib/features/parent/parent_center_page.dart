@@ -1,15 +1,23 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/round_icon_button.dart';
+import '../download/download_sheet.dart';
 
 /// 家长中心占位页（里程碑 M1 仅交付入口；家长门、护眼、时长管理在 M3 落地）。
 ///
 /// 视觉分区（UI 规范 §7）：家长中心 = 降饱和奶油底 + 白卡 + 深紫字，
 /// 无吉祥物、无动画装饰，信息用 `font.caption` 密排。
-class ParentCenterPage extends StatelessWidget {
+class ParentCenterPage extends StatefulWidget {
   const ParentCenterPage({super.key});
+
+  @override
+  State<ParentCenterPage> createState() => _ParentCenterPageState();
+}
+
+class _ParentCenterPageState extends State<ParentCenterPage> {
 
   static const List<(String, String, String)> _features = <(
     String,
@@ -154,6 +162,55 @@ class ParentCenterPage extends StatelessWidget {
                               minimumSize: const Size(0, kParentTapTarget),
                             ),
                             child: const Text('知道了'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  // M2 验收辅助：模拟一次「损坏的网络下载」以验证 MD5 校验失败分支。
+                  // 发布版应收敛到家长门之后（M3），当前家长中心尚无门禁，故显式标注。
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBg,
+                      borderRadius: BorderRadius.circular(AppRadii.lg),
+                      boxShadow: AppShadows.card,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '下载调试（M2 验收）',
+                          style: AppTypography.heading.copyWith(
+                            color: AppColors.text1,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          '开启后，下载确认面板会出现「模拟校验失败」入口，'
+                          '用于验收 MD5 校验失败 → 本地导入引导的兜底链路。',
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.text2,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        SizedBox(
+                          width: double.infinity,
+                          child: AppButton(
+                            label: DownloadDebug.corruptTestEnabled
+                                ? '已开启模拟校验失败'
+                                : '开启下载调试',
+                            type: DownloadDebug.corruptTestEnabled
+                                ? AppButtonType.secondary
+                                : AppButtonType.primary,
+                            icon: Icons.bug_report_rounded,
+                            onPressed: () {
+                              setState(() {
+                                DownloadDebug.corruptTestEnabled = true;
+                              });
+                              showAppToast(context, '已开启，可在下载面板里模拟校验失败');
+                            },
                           ),
                         ),
                       ],
